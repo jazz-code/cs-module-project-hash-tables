@@ -172,12 +172,16 @@ class HashTable:
 
         Implement this.
         """
-        ### 1. Hash the key
-        ### 2. Take the hash and mod it with len of array
-        hashed_key = self.hash_index(key)
-        ### 3. Check if there's a value at that index
-            ### 3a. Go to index, put in that value
-        self.buckets[hashed_key] = value
+        self.load += 1
+        # Check load 
+        if self.get_load_factor() > .7:
+            # If above .7 resize to double capacity
+            self.resize(self.capacity * 2)
+        ### Hash the key
+        ### Take the hash and mod it with len of array
+        idx = self.hash_index(key)
+        ### Go to index, put in that value in LL
+        self.buckets[idx].insert(key, value)
 
     def delete(self, key):
         """
@@ -203,12 +207,13 @@ class HashTable:
         Implement this.
         """
         hashed_key = self.hash_index(key)
-        value = self.buckets[hashed_key]
-        # if self.buckets[hashed_key] != None:
-        #     return self.buckets[hashed_key]
-        # else:
-        #     return None
-        return value
+        # value = key stored in LL
+        value = self.buckets[hashed_key].find_by_key(key)
+        if value is None:
+            return None
+        else:
+        # Return value stored in LL at given key
+            return self.buckets[hashed_key].find_by_key(key)
 
 
     def resize(self, new_capacity):
