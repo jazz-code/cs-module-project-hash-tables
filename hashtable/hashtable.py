@@ -1,11 +1,80 @@
+class Node:
+    def __init__(self,key=None, value=None):
+        self.key = key
+        self.value = value
+        self.next = None
+        
 class HashTableEntry:
     """
     Linked List hash table key/value pair
     """
-    def __init__(self, key, value):
-        self.key = key
-        self.value = value
-        self.next = None
+    def __init__(self, key=None, value=None):
+        if value is None: # validate both key and value entered
+            self.head = None
+        else:
+            self.head = Node(key, value)
+
+    def __str__(self):
+        return_string = '['
+        if self.head is None:
+            return return_string + 'None]'
+        current = self.head
+        while current.next is not None:
+            return_string += f'({current.key}: {current.value}), '
+            current = current.next
+        return return_string + f'({current.key}: {current.value})' + ']'
+
+    #returns the new head
+    def add_to_head(self, key, value):
+        if self.head is None:
+            self.head = Node(key, value)
+        else:
+            node = Node(key, value)
+            node.next = self.head
+            self.head = node
+        return self.head
+
+    def find_by_value(self, value):
+        current = self.head
+        while current is not None:
+            if current.value == value:
+                return current
+            current = current.next
+        return None
+
+    # returns value
+    def find_by_key(self, key):
+        current = self.head
+        while current is not None:
+            if current.key == key:
+                return current.value
+            current = current.next
+        return None
+
+    def insert(self, key, value):
+        current = self.head
+        while current is not None:
+            if current.key == key:
+                current.value = value
+                return current
+            current = current.next
+        # if key is not present in list, add to head
+        self.add_to_head(key, value)
+
+    def delete(self, key):
+        current = self.head
+        if current.key == key: #the head is to be deleted
+            value = current.value
+            self.head = current.next
+            return value
+        while current.next is not None:
+            if current.next.key == key:
+                #this is what we need to delete
+                value = current.next.value
+                current.next = current.next.next
+                return value
+            current = current.next
+        return None
 
 
 # Hash table can't have fewer than this many slots
@@ -21,7 +90,19 @@ class HashTable:
     """
 
     def __init__(self, capacity):
-        # Your code here
+        self.capacity = capacity
+        self.buckets = []
+        self.load = 0
+        # _ for unused variable
+        for _ in range(self.capacity):
+            self.buckets.append(HashTableEntry(None, None))
+        
+
+    def __str__(self):
+        return_str = '['
+        for i in range(self.capacity - 1):
+            return_str += f'{self.buckets[i]}, '
+        return return_str + f'{self.buckets[self.capacity - 1]}]'
 
 
     def get_num_slots(self):
@@ -34,7 +115,7 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        return len(self.buckets)
 
 
     def get_load_factor(self):
@@ -43,7 +124,7 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        return self.load / self.capacity
 
 
     def fnv1(self, key):
@@ -62,13 +143,23 @@ class HashTable:
 
         Implement this, and/or FNV-1.
         """
-        # Your code here
+        # make a variable equal to 5381
+        hashed_result = 5381
+        ## iterate over the bytes of our key
+        key_bytes = key.encode()
+        ## for each byte,
+        for byte in key_bytes:
+        ### shift the variable and add it and add the bye
+            hashed_result = ((hashed_result << 5) + hashed_result) + byte
+
+        return hashed_result
+
 
 
     def hash_index(self, key):
         """
         Take an arbitrary key and return a valid integer index
-        between within the storage capacity of the hash table.
+        between within the buckets capacity of the hash table.
         """
         #return self.fnv1(key) % self.capacity
         return self.djb2(key) % self.capacity
@@ -81,8 +172,16 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
-
+        self.load += 1
+        # Check load 
+        if self.get_load_factor() > .7:
+            # If above .7 resize to double capacity
+            self.resize(self.capacity * 2)
+        ### Hash the key
+        ### Take the hash and mod it with len of array
+        idx = self.hash_index(key)
+        ### Go to index, put in that value in LL
+        self.buckets[idx].insert(key, value)
 
     def delete(self, key):
         """
@@ -92,7 +191,11 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        hashed_key = self.hash_index(key) 
+        if hashed_key:
+            hashed_key = None
+        else:
+            print("Key not Found")
 
 
     def get(self, key):
@@ -103,7 +206,14 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        hashed_key = self.hash_index(key)
+        # value = key stored in LL
+        value = self.buckets[hashed_key].find_by_key(key)
+        if value is None:
+            return None
+        else:
+        # Return value stored in LL at given key
+            return self.buckets[hashed_key].find_by_key(key)
 
 
     def resize(self, new_capacity):
@@ -113,8 +223,20 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
-
+        # instantiate a new HashTable
+        resized_HT = HashTable(new_capacity)
+        # add values from old HT to new reized HT
+        for hashtable in self.buckets:
+            # traverse thru linked list (hashtable)
+            current = hashtable.head
+            while current != None:
+                # add each value to new HT
+                resized_HT.put(current.key, current.value)
+                current = current.next
+            # switch hashtables
+            self.capacity = resized_HT.capacity
+            self.buckets = resized_HT.buckets
+            self.load = resized_HT.load
 
 
 if __name__ == "__main__":
