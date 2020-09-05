@@ -21,8 +21,12 @@ class HashTable:
     """
 
     def __init__(self, capacity):
-        # Your code here
+        # if self.capacity < MIN_CAPACITY:
+        #     self.capacity = MIN_CAPACITY
+        # else:
+        self.capacity = capacity
 
+        self.buckets = [None] * self.capacity
 
     def get_num_slots(self):
         """
@@ -34,7 +38,7 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        return len(self.buckets)
 
 
     def get_load_factor(self):
@@ -62,7 +66,17 @@ class HashTable:
 
         Implement this, and/or FNV-1.
         """
-        # Your code here
+        # make a variable equal to 5381
+        hashed_result = 5381
+        ## iterate over the bytes of our key
+        key_bytes = key.encode()
+        ## for each byte,
+        for byte in key_bytes:
+        ### shift the variable and add it and add the bye
+            hashed_result = ((hashed_result << 5) + hashed_result) + byte
+
+        return hashed_result
+
 
 
     def hash_index(self, key):
@@ -81,8 +95,13 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
-
+        ### 1. Hash the key
+        ### 2. Take the hash and mod it with len of array
+        hashed_key = self.hash_index(key)
+        ### 3. Check if there's a value at that index
+        # if self.buckets[hashed_key] != None:
+            ### 3. Go to index, put in that value
+        self.buckets[hashed_key] = value
 
     def delete(self, key):
         """
@@ -92,7 +111,11 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        hashed_key = self.hash_index(key) 
+        if hashed_key:
+            hashed_key = None
+        else:
+            print("Key not Found")
 
 
     def get(self, key):
@@ -103,7 +126,13 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        hashed_key = self.hash_index(key)
+        value = self.buckets[hashed_key]
+        # if self.buckets[hashed_key] != None:
+        #     return self.buckets[hashed_key]
+        # else:
+        #     return None
+        return value
 
 
     def resize(self, new_capacity):
