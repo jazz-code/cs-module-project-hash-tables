@@ -91,9 +91,18 @@ class HashTable:
 
     def __init__(self, capacity):
         self.capacity = capacity
-        self.storage = []
-        for linked in range(self.capacity):
-            self.storage.append(LinkedList(None, None))
+        self.buckets = []
+        self.load = 0
+        # _ for unused variable
+        for _ in range(self.capacity):
+            self.buckets.append(HashTableEntry(None, None))
+        
+
+    def __str__(self):
+        return_str = '['
+        for i in range(self.capacity - 1):
+            return_str += f'{self.buckets[i]}, '
+        return return_str + f'{self.buckets[self.capacity - 1]}]'
 
 
     def get_num_slots(self):
@@ -115,7 +124,7 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        return self.load / self.capacity
 
 
     def fnv1(self, key):
@@ -150,7 +159,7 @@ class HashTable:
     def hash_index(self, key):
         """
         Take an arbitrary key and return a valid integer index
-        between within the storage capacity of the hash table.
+        between within the buckets capacity of the hash table.
         """
         #return self.fnv1(key) % self.capacity
         return self.djb2(key) % self.capacity
@@ -167,8 +176,7 @@ class HashTable:
         ### 2. Take the hash and mod it with len of array
         hashed_key = self.hash_index(key)
         ### 3. Check if there's a value at that index
-        # if self.buckets[hashed_key] != None:
-            ### 3. Go to index, put in that value
+            ### 3a. Go to index, put in that value
         self.buckets[hashed_key] = value
 
     def delete(self, key):
@@ -210,8 +218,20 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
-
+        # instantiate a new HashTable
+        resized_HT = HashTable(new_capacity)
+        # add values from old HT to new reized HT
+        for hashtable in self.buckets:
+            # traverse thru linked list (hashtable)
+            current = hashtable.head
+            while current != None:
+                # add each value to new HT
+                resized_HT.put(current.key, current.value)
+                current = current.next
+            # switch hashtables
+            self.capacity = resized_HT.capacity
+            self.buckets = resized_HT.buckets
+            self.load = resized_HT.load
 
 
 if __name__ == "__main__":
